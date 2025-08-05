@@ -10,17 +10,26 @@ class Cliente(models.Model):
 
 class Categoria(models.Model):
     nome=models.CharField(max_length=50, null=True, blank=True)
+    
+    def __str__(self):
+        return str(self.nome)
 
 class Tipo(models.Model):
      nome=models.CharField(max_length=50, null=True, blank=True)
 
+     def __str__(self):
+         return str(self.nome)
+
 class Produto(models.Model):
-    imagem=models.CharField(max_length=50, null=True, blank=True)
+    imagem=models.ImageField(null=True, blank=True)
     nome=models.CharField(max_length=50, null=True, blank=True)
     preco=models.DecimalField(max_digits=6, decimal_places=2)
     ativo=models.BooleanField(default=True)
     categoria=models.ForeignKey(Categoria, null=True, blank=True, on_delete=models.SET_NULL)
     tipo=models.ForeignKey(Tipo, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"Nome: {self.nome} Categoria: {self.categoria}  Tipo: {self.tipo} preço: {self.preco}"
 
 class ItemEstoque(models.Model):
     produto = models.ForeignKey(Tipo, null=True, blank=True, on_delete=models.SET_NULL)
