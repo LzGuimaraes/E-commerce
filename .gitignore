@@ -1,0 +1,15 @@
+# Arquivos de cache do Python
+__pycache__/
+
+# Banco de dados
+db.sqlite3
+
+# Mídia (arquivos de usuários)
+/media/
+
+# Variáveis de ambiente
+.env
+
+# Ambientes virtuais
+/venv/
+/env/
