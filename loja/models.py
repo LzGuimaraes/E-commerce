@@ -2,31 +2,31 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Cliente(models.Model):
-    nome=models.CharField(max_length=50, null=True, blank=True)
-    email=models.CharField(max_length=50, null=True, blank=True)
+    nome = models.CharField(max_length=50, null=True, blank=True)
+    email = models.CharField(max_length=50, null=True, blank=True)
     telefone=models.CharField(max_length=50, null=True, blank=True)
     id_sessao = models.CharField(max_length=50, null=True, blank=True)
-    usuario=models.OneToOneField(User, null = True, blank=True, on_delete=models.SET_NULL)
+    usuario = models.OneToOneField(User, null = True, blank=True, on_delete=models.SET_NULL)
 
 class Categoria(models.Model):
-    nome=models.CharField(max_length=50, null=True, blank=True)
+    nome = models.CharField(max_length=50, null=True, blank=True)
     
     def __str__(self):
         return str(self.nome)
 
 class Tipo(models.Model):
-     nome=models.CharField(max_length=50, null=True, blank=True)
+     nome = models.CharField(max_length=50, null=True, blank=True)
 
      def __str__(self):
          return str(self.nome)
 
 class Produto(models.Model):
-    imagem=models.ImageField(null=True, blank=True)
-    nome=models.CharField(max_length=50, null=True, blank=True)
-    preco=models.DecimalField(max_digits=6, decimal_places=2)
-    ativo=models.BooleanField(default=True)
-    categoria=models.ForeignKey(Categoria, null=True, blank=True, on_delete=models.SET_NULL)
-    tipo=models.ForeignKey(Tipo, null=True, blank=True, on_delete=models.SET_NULL)
+    imagem = models.ImageField(null=True, blank=True)
+    nome = models.CharField(max_length=50, null=True, blank=True)
+    preco = models.DecimalField(max_digits=6, decimal_places=2)
+    ativo = models.BooleanField(default=True)
+    categoria = models.ForeignKey(Categoria, null=True, blank=True, on_delete=models.SET_NULL)
+    tipo = models.ForeignKey(Tipo, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"Nome: {self.nome} Categoria: {self.categoria}  Tipo: {self.tipo} preço: {self.preco}"
@@ -57,3 +57,11 @@ class ItensPedido(models.Model):
     item_estoque = models.ForeignKey(ItemEstoque, null=True, blank=True, on_delete=models.SET_NULL)
     quantidade = models.IntegerField(default=0)
     pedido = models.ForeignKey(Pedido,null=True, blank=True, on_delete=models.SET_NULL )   
+
+class Banner(models.Model):
+    imagem = models.ImageField(null=True, blank=True)
+    link_destino= models.CharField(max_length=50, null=True, blank=True)
+    ativo =  models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.link_destino} - Ativo: {self.ativo}"
