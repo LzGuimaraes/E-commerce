@@ -9,8 +9,8 @@ class Cliente(models.Model):
     id_sessao = models.CharField(max_length=200, null=True, blank=True)
     usuario = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
 
-    def __str__(self)->str:
-        return str(self.nome)
+    def __str__(self) -> str:
+        return str(self.email)
 
 class Categoria(models.Model): # Categorias (Masculino, Feminino, Infantil)
     nome = models.CharField(max_length=200, null=True, blank=True)
@@ -67,19 +67,19 @@ class Pedido(models.Model):
     endereco = models.ForeignKey(Endereco, null=True, blank=True, on_delete=models.SET_NULL)
     data_finalizacao = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self)->str:
-        return f"Cliente: {self.cliente.nome} - id_pedido: {self.id} - Finalizado: {self.finalizado}"
+    def __str__(self) -> str:
+        return f"Cliente: {self.cliente.email} - id_pedido: {self.id} - Finalizado: {self.finalizado}"
     
     @property
     def quantidade_total(self):
-        itens_pedido = ItensPedido.objects.filter(pedido_id = self.id)
+        itens_pedido = ItensPedido.objects.filter(pedido__id=self.id)
         quantidade = sum([item.quantidade for item in itens_pedido])
         return quantidade
-
+    
     @property
     def preco_total(self):
-        itens_pedido = ItensPedido.objects.filter(pedido_id = self.id)
-        preco = sum([item.quantidade for item in itens_pedido])
+        itens_pedido = ItensPedido.objects.filter(pedido__id=self.id)
+        preco = sum([item.preco_total for item in itens_pedido])
         return preco
 
 class ItensPedido(models.Model):
@@ -87,13 +87,13 @@ class ItensPedido(models.Model):
     quantidade = models.IntegerField(default=0)
     pedido = models.ForeignKey(Pedido, null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __str__(self)-> str:
+    def __str__(self) -> str:
         return f"Id pedido: {self.pedido.id} - Produto: {self.item_estoque.produto.nome}, {self.item_estoque.tamanho}, {self.item_estoque.cor.nome}"
     
     @property
     def preco_total(self):
         return self.quantidade * self.item_estoque.produto.preco
-    
+
 class Banner(models.Model):
     imagem = models.ImageField(null=True, blank=True)
     link_destino = models.CharField(max_length=400, null=True, blank=True)
