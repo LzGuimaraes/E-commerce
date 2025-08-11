@@ -117,22 +117,8 @@ def checkout(request):
     return render(request, 'checkout.html', context)
 
 def adicionar_endereco(request):
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            cliente = request.user.cliente
-        else:
-            if request.COOKIES.get("id_sessao"):
-                id_sessao = request.COOKIES.get("id_sessao")
-                cliente, criado = Cliente.objects.get_or_create(id_sessao=id_sessao)
-            else:
-                return render('loja.html')
-        dados = request.POST.dict()
-        endereco = Endereco.objects.create(cliente=cliente, rua = dados.get("rua"), numero= int(dados.get("numero")), estado = dados.get("estado"), cidade = dados.get("cidade"), cep = dados.get("cep"))
-        endereco.save()
-        return redirect("checkout")
-    else:
-        context = {}
-        return render (request, "adicionar_endereco.html", context)
+    context = {}
+    return render (request, "adicionar_endereco.html", context)
 
 
 def minha_conta(request):
