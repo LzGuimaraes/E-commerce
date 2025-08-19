@@ -2,7 +2,6 @@ from django.urls import path
 from .views import *
 from django.contrib.auth import views
 
-
 urlpatterns = [
     path('', homepage, name="homepage"),
     path('loja/', loja, name="loja"),
@@ -14,7 +13,9 @@ urlpatterns = [
     path('adicionarcarrinho/<int:id_produto>/', adicionar_carrinho, name="adicionar_carrinho"),
     path('removercarrinho/<int:id_produto>/', remover_carrinho, name="remover_carrinho"),
     path('adicionarendereco/', adicionar_endereco, name="adicionar_endereco"),
+    
     path('minhaconta/', minha_conta, name="minha_conta"),
+    path('meuspedidos/', meus_pedidos, name="meus_pedidos"),
     path('fazerlogin/', fazer_login, name="fazer_login"),
     path('criarconta/', criar_conta, name="criar_conta"),
     path('fazerlogout/', fazer_logout, name="fazer_logout"),

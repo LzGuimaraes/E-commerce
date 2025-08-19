@@ -161,10 +161,56 @@ def adicionar_endereco(request):
     else:
         context = {}
         return render(request, "adicionar_endereco.html", context)
-    
+
 @login_required
 def minha_conta(request):
-    return render(request, 'usuario/minha_conta.html')
+    erro = None
+    alterado = False
+    if request.method == "POST":
+        dados = request.POST.dict()
+        if "senha_atual" in dados:
+            senha_atual =  dados.get("senha_atual")
+            nova_senha = dados.get("nova_senha")
+            nova_senha_confirmacao = dados.get("nova_senha_confirmacao")
+            if nova_senha == nova_senha_confirmacao:
+                usuario = authenticate(request, username=request.user.email, password=senha_atual)
+                if usuario:
+                    usuario.set_password(nova_senha)
+                    usuario.save()
+                    alterado = True
+                else:
+                    erro = "senha_incorreta"
+            else:
+                erro = "senhas_diferentes"
+        
+        elif "email" in dados:
+            email = dados.get("email")
+            telefone = dados.get("telefone")
+            nome = dados.get("nome")
+            if email != request.user.email:
+                usuarios = User.objects.filter(email=email)
+                if len(usuarios) > 0:
+                    erro = "email_existente"
+            if not erro:
+                cliente = request.user.cliente
+                cliente.email = email
+                request.user.email = email
+                cliente.nome = nome
+                cliente.telefone = telefone
+                cliente.save()
+                request.user.save()
+                alterado = True
+        else:
+            erro = "formulario_invalido"
+    context = {"erro": erro, "alterado" : alterado}
+    return render(request, 'usuario/minha_conta.html', context)
+
+@login_required
+def meus_pedidos(request):
+    cliente = request.user.cliente
+    pedidos = Pedido.objects.filter(finalizado=True, cliente=cliente).order_by("-data_finalizacao")
+    context = {"pedidos": pedidos}
+    return render(request, "usuario/meus_pedidos.html", context)
 
 def fazer_login(request):
     erro = False
@@ -233,4 +279,4 @@ def criar_conta(request):
 @login_required
 def fazer_logout(request):
     logout(request)
-    return redirect ("fazer_login")
+    return redirect("fazer_login")
