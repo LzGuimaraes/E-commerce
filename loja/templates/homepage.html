@@ -1,15 +1,14 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block body %}
 
-<h3>homepage</h3>
+<h3>HomePage</h3>
 
 {% for banner in banners %}
 <a href="{% url 'loja' %}{{ banner.link_destino }}">
-    <img src="{{banner.imagem.url}}" width="450" height="450">
+    <img src="{{ banner.imagem.url }}">
 </a>
-
 {% endfor %}
 
 {% endblock %}

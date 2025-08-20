@@ -5,7 +5,8 @@
 
 <h3>Loja</h3>
 
-<div style="display: flex;"> 
+<div style="display: flex;">
+
     <form method="POST" action="">
         {% csrf_token %}
         <p>Preço</p>
@@ -35,9 +36,9 @@
     <div>
         Ordenar por:
         <ul>
-           <li><a href="#" class="item-ordenar" name="menor-preco">Menor Preço</a></li>
-           <li><a href="#" class="item-ordenar" name="maior-preco">Maior Preço</a> </li>
-            <li><a href="#" class="item-ordenar" name="mais-vendido">Mais Vendidos</a></li>
+            <li><a href="#" class="item-ordenar" name="menor-preco">Menor Preço</a></li>
+            <li><a href="#" class="item-ordenar" name="maior-preco">Maior Preço</a></li>
+            <li><a href="#" class="item-ordenar" name="mais-vendidos">Mais Vendidos</a></li>
         </ul>
         {% for produto in produtos %}
 
@@ -49,5 +50,6 @@
 
         {% endfor %}
     </div>
+
 </div>
 {% endblock %}

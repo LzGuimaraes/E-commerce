@@ -22,7 +22,7 @@ class Categoria(models.Model): # Categorias (Masculino, Feminino, Infantil)
 class Tipo(models.Model): # Tipos (Camisa, Camiseta, Bermuda, Calça)
     nome = models.CharField(max_length=200, null=True, blank=True)
     slug = models.CharField(max_length=200, null=True, blank=True)
-
+    
     def __str__(self):
         return str(self.nome)
 
@@ -38,10 +38,9 @@ class Produto(models.Model):
         return f"Nome: {self.nome}, Categoria: {self.categoria}, Tipo: {self.tipo}, Preço: {self.preco}"
     
     def total_vendas(self):
-        itens = ItensPedido.objects.filter(pedido__finalizado = True, item_estoque__produto=self.id)
+        itens = ItensPedido.objects.filter(pedido__finalizado=True, item_estoque__produto=self.id)
         total = sum([item.quantidade for item in itens])
         return total
-
 
 class Cor(models.Model):
     nome = models.CharField(max_length=200, null=True, blank=True)
@@ -68,8 +67,8 @@ class Endereco(models.Model):
     estado = models.CharField(max_length=200, null=True, blank=True)
     cliente = models.ForeignKey(Cliente, null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __str__(self)-> str:
-        return f"{self.cliente} - {self.rua} - {self.cidade} - {self.estado} - {self.cep}"
+    def __str__(self) -> str:
+        return f"{self.cliente} - {self.rua} - {self.cidade}-{self.estado} - {self.cep}"
 
 class Pedido(models.Model):
     cliente = models.ForeignKey(Cliente, null=True, blank=True, on_delete=models.SET_NULL)
@@ -92,6 +91,12 @@ class Pedido(models.Model):
         itens_pedido = ItensPedido.objects.filter(pedido__id=self.id)
         preco = sum([item.preco_total for item in itens_pedido])
         return preco
+    
+    @property
+    def itens(self):
+        itens_pedido = ItensPedido.objects.filter(pedido__id=self.id)
+        return itens_pedido
+    
 
 class ItensPedido(models.Model):
     item_estoque = models.ForeignKey(ItemEstoque, null=True, blank=True, on_delete=models.SET_NULL)
@@ -112,3 +117,10 @@ class Banner(models.Model):
 
     def __str__(self):
         return f"{self.link_destino} - Ativo: {self.ativo}"
+    
+class Pagamento(models.Model):
+    id_pagamento = models.CharField(max_length=400)
+    pedido = models.ForeignKey(Pedido, null=True, blank=True, on_delete=models.SET_NULL)
+    aprovado = models.BooleanField(default=False)
+
+

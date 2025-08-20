@@ -13,42 +13,41 @@
 {% endif %}
 
 {% if erro == "senha_incorreta" %}
-<p>Senha Incorreta</p>
+<p>Sua senha está incorreta</p>
 {% endif %}
 
-{% if erro == "senha_diferentes" %}
-<p>Senhas não conferem</p>
+{% if erro == "senhas_diferentes" %}
+<p>Nova Senha e confirmação da nova senha não estão iguais</p>
 {% endif %}
 
 {% if erro == "email_existente" %}
-    <p>E-mail ja cadastrado</p>
+<p>Já existe um usuário com esse e-mail</p>
 {% endif %}
 
 {% if erro == "formulario_invalido" %}
-    <p>Formulario Invalido</p>
+<p>Formulário Inválido, tente novamente</p>
 {% endif %}
 
 <h3>Meus Dados</h3>
-
 <form method="POST" action="{% url 'minha_conta' %}">
     {% csrf_token %}
-    <input type="text" name="nome" placeholder="Nome Completo"
+    <input type="text" name="nome" placeholder="Nome Completo" 
     {% if request.user.cliente.nome %}
-        value="{{ request.user.cliente.nome }}"    
-     {% endif %}>
-    <input type="email" name="email" placeholder="Email" 
-    value="{{ request.user.email }}">
-    <input type="number" name="telefone" placeholder="Telefone" value="{{ request.user.cliente.telefone }}" >
-
+        value="{{ request.user.cliente.nome }}"
+    {% endif %}>
+    <input type="email" name="email" placeholder="Email" value="{{ request.user.email }}">
+    <input type="number" name="telefone" placeholder="Telefone" value="{{ request.user.cliente.telefone }}">
     <button type="submit">Salvar</button>
 </form>
+
 <hr>
 <h3>Alterar Senha</h3>
 <form method="POST" action="{% url 'minha_conta' %}">
     {% csrf_token %}
     <input type="password" name="senha_atual" placeholder="Senha Atual">
     <input type="password" name="nova_senha" placeholder="Nova Senha">
-    <input type="password" name="nova_senha_confirmacao" placeholder="Confirmação de nova senha">
+    <input type="password" name="nova_senha_confirmacao" placeholder="Confirmação Nova Senha">
     <button type="submit">Editar Senha</button>
 </form>
+
 {% endblock %}

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from .models import *
 import uuid
 from .utils import filtrar_produtos, preco_minimo_maximo, ordenar_produtos
@@ -6,6 +7,8 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from datetime import datetime
+from .api_mercadopago import criar_pagamento
 
 # Create your views here.
 def homepage(request):
@@ -138,8 +141,82 @@ def checkout(request):
             return redirect('loja')
     pedido, criado = Pedido.objects.get_or_create(cliente=cliente, finalizado=False)
     enderecos = Endereco.objects.filter(cliente=cliente)
-    context = {"pedido": pedido, "enderecos": enderecos}
+    context = {"pedido": pedido, "enderecos": enderecos, "erro": None}
     return render(request, 'checkout.html', context)
+
+def finalizar_pedido(request, id_pedido):
+    if request.method == "POST":
+        erro = None
+        dados = request.POST.dict()
+
+        total = dados.get("total")
+        total = float(total.replace(",", "."))
+        pedido = Pedido.objects.get(id=id_pedido)
+
+        if total != float(pedido.preco_total):
+            erro = "preco"
+
+        if not "endereco" in dados:
+            erro = "endereco"
+        else:
+            id_endereco = dados.get("endereco")
+            endereco = Endereco.objects.get(id=id_endereco)
+            pedido.endereco = endereco
+
+        if not request.user.is_authenticated:
+            email = dados.get("email")
+            try:
+                validate_email(email)
+            except ValidationError:
+                erro = "email"
+            if not erro:
+                clientes = Cliente.objects.filter(email=email)
+                if clientes:
+                    pedido.cliente = clientes[0]
+                else:
+                    pedido.cliente.email = email
+                    pedido.cliente.save()
+        
+        codigo_transacao = f"{pedido.id}-{datetime.now().timestamp()}"
+        pedido.codigo_transacao = codigo_transacao
+        pedido.save()
+        if erro:
+            enderecos = Endereco.objects.filter(cliente=pedido.cliente)
+            context = {"erro": erro, "pedido": pedido, "enderecos": enderecos}
+            return render(request, "checkout.html", context)
+        else:
+            itens_pedido = ItensPedido.objects.filter(pedido=pedido)
+            link = request.build_absolute_uri(reverse('finalizar_pagamento'))
+            link_pagamento, id_pagamento = criar_pagamento(itens_pedido, link)
+            pagamento = Pagamento.objects.create(id_pagamento=id_pagamento, pedido=pedido)
+            pagamento.save()
+            return redirect(link_pagamento)
+    else:
+        return redirect("loja")
+    
+def finalizar_pagamento(request):
+    dados = request.GET.dict()
+    status = dados.get("status")
+    id_pagamento = dados.get("preference_id")
+    if status == "approved":
+        pagamento = Pagamento.objects.get(id_pagamento=id_pagamento)
+        pagamento.aprovado = True
+        pedido = pagamento.pedido
+        pedido.finalizado = True
+        pedido.data_finalizacao = datetime.now()
+        pedido.save()
+        pagamento.save()
+        if request.user.is_authenticated:
+            return redirect("meus_pedidos")
+        else:
+            return redirect("pedido_aprovado", pedido.id)
+    else:
+        return redirect("checkout")
+
+def pedido_aprovado(request, id_pedido):
+    pedido = Pedido.objects.get(id=id_pedido)
+    context = {"pedido": pedido}
+    return render(request, "pedido_aprovado.html", context)
 
 def adicionar_endereco(request):
     if request.method == "POST":
@@ -169,10 +246,12 @@ def minha_conta(request):
     if request.method == "POST":
         dados = request.POST.dict()
         if "senha_atual" in dados:
-            senha_atual =  dados.get("senha_atual")
+            # esta modificando senha
+            senha_atual = dados.get("senha_atual")
             nova_senha = dados.get("nova_senha")
             nova_senha_confirmacao = dados.get("nova_senha_confirmacao")
             if nova_senha == nova_senha_confirmacao:
+                # verificar se a senha atual ta certa
                 usuario = authenticate(request, username=request.user.email, password=senha_atual)
                 if usuario:
                     usuario.set_password(nova_senha)
@@ -182,7 +261,6 @@ def minha_conta(request):
                     erro = "senha_incorreta"
             else:
                 erro = "senhas_diferentes"
-        
         elif "email" in dados:
             email = dados.get("email")
             telefone = dados.get("telefone")
@@ -195,6 +273,7 @@ def minha_conta(request):
                 cliente = request.user.cliente
                 cliente.email = email
                 request.user.email = email
+                request.user.username = email
                 cliente.nome = nome
                 cliente.telefone = telefone
                 cliente.save()
@@ -202,7 +281,7 @@ def minha_conta(request):
                 alterado = True
         else:
             erro = "formulario_invalido"
-    context = {"erro": erro, "alterado" : alterado}
+    context = {"erro": erro, "alterado": alterado}
     return render(request, 'usuario/minha_conta.html', context)
 
 @login_required
